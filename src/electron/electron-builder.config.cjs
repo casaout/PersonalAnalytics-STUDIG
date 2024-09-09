@@ -9,8 +9,8 @@ module.exports = {
   files: ['dist', 'dist-electron'],
   publish: {
     provider: 'github',
-    owner: 'HASEL-UZH',
-    repo: 'PersonalAnalytics'
+    owner: 'casaout',
+    repo: 'PersonalAnalytics-STUDIG'
   },
   mac: {
     artifactName: '${productName}-Mac-${version}-Installer.${ext}',
