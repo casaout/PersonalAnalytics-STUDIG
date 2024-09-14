@@ -24,7 +24,7 @@ const studyConfig: StudyConfiguration = {
     },
     experienceSamplingTracker: {
       enabled: true,
-      scale: 3,
+      scale: 7,
       questions: [
         'Ich bin gerade sehr produktiv.',
         'Ich fühle mich gerade motiviert, meine Aufgaben zu erledigen.',
