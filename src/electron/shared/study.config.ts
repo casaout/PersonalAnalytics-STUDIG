@@ -7,8 +7,8 @@ const studyConfig: StudyConfiguration = {
   infoUrl: 'https://mydata-lab.uzh.ch/STUDIG/overview.html', // todo: create
   privacyPolicyUrl: 'https://mydata-lab.uzh.ch/STUDIG/privacy.html', // todo: create
   uploadUrl: 'https://mydata-lab.uzh.ch/STUDIG/upload.html', // todo: update
-  contactName: 'Dr. Malte Doehne, Dr. André Meyer',
-  contactEmail: 'doehne@soziologie.uzh.ch', // todo: update
+  contactName: 'Dr. Malte Doehne, Christopher Vantis, Dr. André Meyer',
+  contactEmail: 'christopher.vantis@uzh.ch',
   subjectIdLength: 6,
   dataExportEnabled: true,
   trackers: {
