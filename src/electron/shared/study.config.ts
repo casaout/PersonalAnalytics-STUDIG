@@ -3,14 +3,14 @@ import { StudyConfiguration } from './StudyConfiguration';
 const studyConfig: StudyConfiguration = {
   name: 'STUDIG – Student Digital Device Use Study',
   shortDescription:
-    'Bislang ist wenig darüber bekannt, wie Wissensarbeit am Rechner abläuft. Ziel dieser Studie ist es, anhand anonymisierter Verhaltensdaten die weltweit erste Typologie der Laptop- und Computernutzung im Studium zu erstellen. Dies ist zugleich die erste Untersuchung, die auf der UZH neu gegründeten D2USP Forschungsplattform basiert. Das Studiendesign umfasst drei Hauptkomponenten: (1) drei Fragebögen, die im Laufe des Semesters erhoben und deren Ergebnisse in der Vorlesung thematisiert werden, (2) die Erfassung anonymer Nutzungsdaten digitaler Geräte und (3) die sporadische Abfrage von Befindlichkeitsdaten (Experience Sampling). Alle Nutzungsdaten und Experience Sampling werden zunächst ausschliesslich lokal auf Ihrem Rechner gespeichert und können später, im Rahmen eines strukturierten Datenspende anonymisiert und gespendet werden. Zu jedem Zeitpunkt ist Ihre Anonymität gesichert. Zwischenergebnisse fliessen in die Vorlesungsinhalte ein, so dass Sie über Ihre Teilnahme-ID soziologisch spannende Erkenntnisse erfahren. Bei Fragen können Sie sich jederzeit vertrauensvoll an Herrn Christopher Vantis wenden, der Ihre Informationen streng vertraulich behandelt. Ihre Teilnahme ist freiwillig!',
+    '<p><strong>Der digitale Arbeitsplatz und die Wissensarbeit im Studium sind bislang wenig erforscht.</strong> Ziel dieser Studie ist es, anhand anonymisierter Verhaltensdaten ein erstes Verst&auml;ndnis der Laptop- und Computernutzung im Studium zu entwickeln. Daf&uuml;r bitten wir Sie, die an der Universit&auml;t Z&uuml;rich entwickelte Software &bdquo;PersonalAnalytics&ldquo; auf Ihrem Hauptarbeitsger&auml;t zu installieren.</p><p><strong>Was macht PersonalAnalytics?</strong> PersonalAnalytics erfasst App-Nutzungsdaten (z.B. Start- und Endzeiten sowie App-Namen, jedoch keine Inhalte), aggregierte Eingabedaten (wie Tastatur- und Mausbewegungen, kein Keylogging), und in regelm&auml;ssigen Abst&auml;nden kurze Befindlichkeitsabfragen (Experience Sampling). Alle erhobenen Daten werden <strong>ausschliesslich lokal</strong> auf Ihrem Ger&auml;t gespeichert und sind nur f&uuml;r Sie sichtbar.</p><p><strong>Datenspende:</strong> Nach ca. 3, 6 und 9 Wochen bitten wir Sie, Ihre Daten anonymisiert f&uuml;r die Forschung zu spenden. Die Teilnahme und Datenspende sind selbstverst&auml;ndlich freiwillig, und Ihre Anonymit&auml;t ist zu jedem Zeitpunkt sichergestellt.</p>',
   infoUrl: 'https://mydata-lab.uzh.ch/STUDIG/overview.html', // todo: create
   privacyPolicyUrl: 'https://mydata-lab.uzh.ch/STUDIG/privacy.html', // todo: create
   uploadUrl: 'https://mydata-lab.uzh.ch/STUDIG/upload.html', // todo: update
-  contactName: 'Dr. Malte Doehne, Dr. André Meyer',
-  contactEmail: 'doehne@soziologie.uzh.ch', // todo: update
+  contactName: 'Dr. Malte Doehne, Christopher Vantis, Dr. André Meyer',
+  contactEmail: 'christopher.vantis@uzh.ch',
   subjectIdLength: 6,
-  dataExportEnabled: true,
+  dataExportEnabled: false, // todo: re-enable, once we have a 
   trackers: {
     windowActivityTracker: {
       enabled: true,
