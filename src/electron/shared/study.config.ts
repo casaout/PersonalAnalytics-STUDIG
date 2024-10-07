@@ -3,12 +3,12 @@ import { StudyConfiguration } from './StudyConfiguration';
 const studyConfig: StudyConfiguration = {
   name: 'STUDIG – Student Digital Device Use Study',
   shortDescription:
-    'Der digitale Arbeitsplatz und die Wissensarbeit im Studium sind bislang wenig erforscht. Ziel dieser Studie ist es, anhand anonymisierter Verhaltensdaten ein erstes Verständnis der Laptop- und Computernutzung im Studium zu entwickeln. Dafür bitten wir Sie, die an der Universität Zürich entwickelte Software &bdquo;PersonalAnalytics" auf Ihrem Hauptarbeitsgerät zu installieren.    Was macht PersonalAnalytics? PersonalAnalytics erfasst App-Nutzungsdaten (z.B. Start- und Endzeiten sowie App-Namen, jedoch keine Inhalte), aggregierte Eingabedaten (wie Tastatur- und Mausbewegungen, kein Keylogging), und in regelmässigen Abständen kurze Befindlichkeitsabfragen (Experience Sampling). Alle erhobenen Daten werden ausschliesslich lokal auf Ihrem Gerät gespeichert und sind nur für Sie sichtbar.    Datenspende: Nach ca. 3, 6 und 9 Wochen bitten wir Sie, Ihre Daten anonymisiert für die Forschung zu spenden. Die Teilnahme und Datenspende sind selbstverständlich freiwillig, und Ihre Anonymität ist zu jedem Zeitpunkt sichergestellt.',
-  infoUrl: 'https://mydata-lab.uzh.ch/STUDIG/overview.html', // todo: create
-  privacyPolicyUrl: 'https://mydata-lab.uzh.ch/STUDIG/privacy.html', // todo: create
+    'Der digitale Arbeitsplatz und die Wissensarbeit im Studium sind bislang wenig erforscht. Ziel dieser Studie ist es, anhand anonymisierter Verhaltensdaten ein erstes Verständnis der Laptop- und Computernutzung im Studium zu entwickeln. Dafür bitten wir Sie, die an der Universität Zürich entwickelte Software "PersonalAnalytics" auf Ihrem Hauptarbeitsgerät zu installieren.    Was macht PersonalAnalytics? PersonalAnalytics erfasst App-Nutzungsdaten (z.B. Start- und Endzeiten sowie App-Namen, jedoch keine Inhalte), aggregierte Eingabedaten (wie Tastatur- und Mausbewegungen, kein Keylogging), und in regelmässigen Abständen kurze Befindlichkeitsabfragen (Experience Sampling). Alle erhobenen Daten werden ausschliesslich lokal auf Ihrem Gerät gespeichert und sind nur für Sie sichtbar.    Datenspende: Nach ca. 3, 6 und 9 Wochen bitten wir Sie, Ihre Daten anonymisiert für die Forschung zu spenden. Die Teilnahme und Datenspende sind selbstverständlich freiwillig, und Ihre Anonymität ist zu jedem Zeitpunkt sichergestellt.',
+  infoUrl: 'https://mydata-lab.uzh.ch/studien/STUDIG.html', // todo: create
+  privacyPolicyUrl: 'https://mydata-lab.uzh.ch/studien/STUDIG.html', // todo: create
   uploadUrl: 'https://mydata-lab.uzh.ch/STUDIG/upload.html', // todo: update
   contactName: 'Dr. Malte Doehne, Christopher Vantis, Dr. André Meyer',
-  contactEmail: 'christopher.vantis@uzh.ch',
+  contactEmail: 'studig@meine-daten.ch',
   subjectIdLength: 6,
   dataExportEnabled: false, // todo: re-enable, once we have a 
   trackers: {
@@ -69,7 +69,7 @@ const studyConfig: StudyConfiguration = {
         ['gar nicht', 'neutral', 'vollständig'],
         ['gar nicht', 'neutral', 'vollständig'],
       ],
-      intervalInMs: 1000 * 60 * 60 * 5,  // 5 hours
+      intervalInMs: 1000 * 60 * 60 * 3,  // 3 hours
       samplingRandomization: 0.1 // 10% randomization, so the interval will be between 2.7 and 3.3 hours
     }
   }
