@@ -3,8 +3,8 @@ import { StudyConfiguration } from './StudyConfiguration';
 const studyConfig: StudyConfiguration = {
   name: 'STUDIG – Student Digital Device Use Study',
   shortDescription: '<p><strong>Der digitale Arbeitsplatz und die Wissensarbeit im Studium sind bislang wenig erforscht.</strong> Ziel dieser Studie ist es, anhand anonymisierter Verhaltensdaten ein erstes Verständnis der Laptop- und Computernutzung im Studium zu entwickeln. Dafür bitten wir Sie, die an der Universität Zürich entwickelte Software "PersonalAnalytics" auf Ihrem Hauptarbeitsgerät zu installieren.</p><p><strong>Was macht PersonalAnalytics?</strong> PersonalAnalytics erfasst App-Nutzungsdaten (z.B. Start- und Endzeiten sowie App-Namen, jedoch keine Inhalte), aggregierte Eingabedaten (wie Tastatur- und Mausbewegungen, kein Keylogging), und in regelmässigen Abständen kurze Befindlichkeitsabfragen (Experience Sampling). Alle erhobenen Daten werden <strong>ausschliesslich lokal</strong> auf Ihrem Gerät gespeichert und sind nur für Sie sichtbar.</p><p><strong>Datenspende:</strong> Nach ca. 3, 6 und 9 Wochen bitten wir Sie, Ihre Daten anonymisiert für die Forschung zu spenden. Die Teilnahme und Datenspende sind selbstverständlich freiwillig, und Ihre Anonymität ist zu jedem Zeitpunkt sichergestellt.</p>',  
-  infoUrl: 'https://mydata-lab.uzh.ch/studien/STUDIG.html', // todo: create
-  privacyPolicyUrl: 'https://mydata-lab.uzh.ch/studien/STUDIG.html', // todo: create
+  infoUrl: 'https://mydata-lab.uzh.ch/de/studien/STUDIG.html',
+  privacyPolicyUrl: 'https://mydata-lab.uzh.ch/de/studien/STUDIG.html',
   uploadUrl: 'https://mydata-lab.uzh.ch/STUDIG/upload.html', // todo: update
   contactName: 'Dr. Malte Doehne, Christopher Vantis, Dr. André Meyer',
   contactEmail: 'studig@meine-daten.ch',
