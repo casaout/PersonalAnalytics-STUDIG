@@ -10,6 +10,7 @@ const studyConfig: StudyConfiguration = {
   contactEmail: 'studig@meine-daten.ch',
   subjectIdLength: 6,
   dataExportEnabled: true,
+  dataExportEncrypted: false,
   trackers: {
     windowActivityTracker: {
       enabled: true,
