@@ -9,7 +9,8 @@ const studyConfig: StudyConfiguration = {
   contactName: 'Dr. Malte Doehne, Christopher Vantis, Dr. André Meyer',
   contactEmail: 'studig@meine-daten.ch',
   subjectIdLength: 6,
-  dataExportEnabled: true, // todo: re-enable, once we have a 
+  dataExportEnabled: true,
+  dataExportEncrypted: false,
   trackers: {
     windowActivityTracker: {
       enabled: true,
