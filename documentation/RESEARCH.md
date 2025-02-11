@@ -15,18 +15,17 @@ When creating new releases, update the package.json file with the new version nu
 
 ### Required GitHub Secrets
 To use GitHub Actions to build and create PersonalAnalytics releases, you need to set the following secrets in your repository:
-- `GH_TOKEN` (a GitHub token with the `repo` scope)
-- `APPLE_ID` (your Apple ID)
-- `APPLE_APP_SPECIFIC_PASSWORD` (an app-specific password for your Apple ID)
-- `APPLE_TEAM_ID` (your Apple Team ID)
-- `CSC_LINK` (link to Apple Developer Certificate in \*.p12 format)
-- `CSC_KEY_PASSWORD` (password for the Apple Developer Certificate)
 
-### Required Changes in `electron-builder.json5`
+- `GH_TOKEN`: a GitHub token with the `repo` scope
+- Windows Code Signing secrets ([see below](
+https://github.com/HASEL-UZH/PersonalAnalytics/edit/dev/documentation/RESEARCH.md#windows-secrets-add-to-github-secrets))
+- macOS Code Signing secrets ([see below](https://github.com/HASEL-UZH/PersonalAnalytics/edit/dev/documentation/RESEARCH.md#macos-secrets-add-to-github-secrets))
+
+### Required Changes in `electron-builder.config.cjs`
 These changes are required to automatically publish the built artifacts to GitHub releases. You need to replace the `owner` and `repo` with your GitHub username and repository name.
-You can find more information on electron-builder here: https://www.electron.build/ and for the `electron-builder.json5` file here: https://www.electron.build/configuration/configuration
+You can find more information on electron-builder here: https://www.electron.build/ and for the `electron-builder.config.cjs` file here: https://www.electron.build/configuration/configuration
 
-```json5
+```cjfs
 {
   publish: {
     provider: "github",
@@ -146,6 +145,51 @@ Note that we're using Electron Builder and Github Actions (see [docu]([url](http
 - Manually download and test the release, and if all is good, publish it!
 - Releases are found under https://github.com/HASEL-UZH/PersonalAnalytics/releases
 
+### Code Signing for Windows
+
+For Windows, we are using Azure Trusted Signing (beta) for code signing using Andre's personal account.
+Please refer to the [electron-builder documentation](https://www.electron.build/code-signing.html#using-with-azure-trusted-signing-beta)
+and [Azure's documentation](https://learn.microsoft.com/en-us/azure/trusted-signing/how-to-signing-integrations)
+for more information. Following [this guide](https://melatonin.dev/blog/code-signing-on-windows-with-azure-trusted-signing/), the following
+secrets and variables were defined for the GitHub action:
+
+
+#### Windows Secrets (add to Github Secrets)
+
+| Name                      | Description                                                                                                                              |
+|---------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `AZURE_TENANT_ID`         | The Microsoft Entra tenant (directory) ID.                                                                                               |
+| `AZURE_CERT_PROFILE_NAME` | The name of the certificate (public trust) profile.                                                                                      |
+| `AZURE_CLIENT_ID`         | The client (application) ID of an App Registration in the tenant.                                                                        |
+| `AZURE_CLIENT_SECRET`     | The client secret that was generated for the App Registration.                                                                           |
+| `AZURE_CODE_SIGNING_NAME` | The name of the trusted signing account (from the main Trusted Signing Account page in Azure).                                           |
+| `AZURE_ENDPOINT`          | The URL for the selected region, labelled as Account URI (from the main Trusted Signing Account page in Azure).                          |
+| `AZURE_PUBLISHER_NAME`    | The publisher name used for code signing for Windows builds. This is the full string in the form of `CN=..., O=..., L=..., S=..., C=CH`. |
+
+Note that using special characters (e.g. `é`) in the publisher name can lead to issues with the code signing process.
+
+The above secrets and variables are used in the action files (e.g., [build.yml](https://github.com/HASEL-UZH/PersonalAnalytics/blob/dev/.github/workflows/build.yml)) and
+provided to the electron-builder ([electron-builder.config.cjs](../src/electron/electron-builder.config.cjs)) via environment variables.
+
+
+### Code Signing for macOS
+
+For macOS, the electron-builder's code signing is
+disabled ([electron-builder.config.cjs](../src/electron/electron-builder.config.cjs)) and we are using the `afterSign` hook to
+call the [notarize.cjs](../src/electron/scripts/notarize.cjs) script to sign the application using the `@electron/notarize`
+package. The following environment variables are required for the code signing process:
+
+
+#### macOS Secrets (add to Github Secrets)
+
+| Name                          | Description                                                                                         |
+|-------------------------------|-----------------------------------------------------------------------------------------------------|
+| `APPLE_ID`                    | The Apple ID used for notarization.                                                                 |
+| `APPLE_ID_PASS`               | The password for the Apple ID.                                                                      |
+| `APPLE_TEAM_ID`               | The Apple Team ID (https://developer.apple.com/help/account/manage-your-team/locate-your-team-id/). |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-Specific Password linked to your Apple ID (https://appleid.apple.com/account/manage).           |
+| `CSC_LINK`                    | base64-encoded data of the Apple Developer Account certificate.                                     |
+| `CSC_KEY_PASSWORD`            | Password of the Apple Developer Account certificate used to decrypt the certificate.                |
 
 ### Testing PersonalAnalytics
 PersonalAnalytics was tested on `Windows 11` and `macOS 14`. It might work on older versions as well.
