@@ -2,7 +2,7 @@
 Anyone may install PersonalAnalytics on their Windows or macOS device to non-intrusively collect computer interaction data, and analyze their activity, time spent and work habits for themselves. In the future, once we'll re-introduce the Retrospection (i.e. visualizations of the collected and self-reported data), it will be much easier to gain insights again.
 
 ## How to install PersonalAnalytics on Windows
-1. Visit https://hasel.dev/pa (or use the link provided to you by the researchers)
+1. Visit [the download page of PersonalAnalytics for STUDIG](https://github.com/casaout/PersonalAnalytics-STUDIG/releases/latest)
 2. Select the Windows version (exe-file)
 3. Wait for the download to complete
 4. Allow the install-file (exe) to be downloaded in case your browser blocks it
@@ -17,7 +17,7 @@ The following video shows the steps in action:
 
 
 ## How to install PersonalAnalytics on macOS
-1. Visit https://hasel.dev/pa (or use the link provided to you by the researchers)
+1. Visit [the download page of PersonalAnalytics for STUDIG)](https://github.com/casaout/PersonalAnalytics-STUDIG/releases/latest)
 2. Select the macOS version (dmg-file)
 3. Wait for the download to complete
 4. Open the downloaded instller and drag the PersonalAnalytics-app to your Applications folder
