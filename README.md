@@ -1,4 +1,5 @@
-# PersonalAnalytics - Privacy-protecting, open-source Self-Monitoring Software
+# PersonalAnalytics - D2CA
+
 
 PersonalAnalytics is a self-monitoring software developed by the [Human Aspects of Software Engineering Lab](https://hasel.dev) of [the University of Zurich](https://www.uzh.ch) to non-intrusively collect computer interaction data and user's self-reports, store it locally on the user's machine, and allow users to voluntarily share a user-defined and potentially obfuscated subset of the data with researchers for scientific purposes.
 
