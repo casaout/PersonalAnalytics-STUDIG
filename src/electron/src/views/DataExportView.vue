@@ -40,7 +40,9 @@ const hasExportError = ref(false);
 const pathToExportedFile = ref('');
 const fileName = ref('');
 
-const availableSteps = ['export-1', 'export-2', 'create-export'];
+const availableSteps = studyConfig.dataExportFormat === 'ExportToDDL'
+  ? ['export-1', 'export-2', 'upload-to-ddl'] // when uploading the export to the DDL
+  : ['export-1', 'export-2', 'create-export']; // when exporting to a file
 
 const maxSteps = computed(() => {
   return availableSteps.length;
@@ -152,7 +154,7 @@ async function handleNextStep() {
 
   transitionName.value = 'slide-left-right';
   currentStep.value++;
-  if (currentNamedStep.value === 'create-export') {
+  if (currentNamedStep.value === 'create-export' || currentNamedStep.value === 'upload-to-ddl') {
     isExporting.value = true;
     try {
       let obfuscationTerms: string[] = [];
@@ -163,21 +165,27 @@ async function handleNextStep() {
       ) {
         obfuscationTerms = Array.from(obfuscationTermsInput.value);
       }
-      pathToExportedFile.value = await typedIpcRenderer.invoke(
+      // run export with the selected options
+      const exportResult = await typedIpcRenderer.invoke(
         'startDataExport',
         exportWindowActivitySelectedOption.value,
         exportUserInputSelectedOption.value,
         obfuscationTerms,
-        studyConfig.dataExportEncrypted
+        studyConfig.dataExportEncrypted,
+        studyConfig.dataExportFormat
       );
+
+      pathToExportedFile.value = exportResult.fullPath;
       hasExportError.value = false;
-      const now = new Date();
-      const nowStr = now.toISOString().replace(/:/g, '-').replace('T', '_').slice(0, 16);
       // Also update the DataExportService if you change the file name here
-      fileName.value = `PA_${studyInfo.value?.subjectId}_${nowStr}.sqlite`;
+      fileName.value = exportResult.fileName;
+
     } catch (e) {
       LOG.error(e);
       hasExportError.value = true;
+      
+      showDataExportError();
+      handleBackStep();
     }
     isExporting.value = false;
   }
@@ -189,6 +197,15 @@ function handleBackStep() {
   }
   transitionName.value = 'slide-right-left';
   currentStep.value--;
+}
+
+function showDataExportError() {
+  typedIpcRenderer.invoke('showDataExportError');
+}
+
+function openUploadUrl(event: Event) {
+  typedIpcRenderer.invoke('openUploadUrl');
+  event.preventDefault();
 }
 
 function revealItemInFolder(event: Event) {
@@ -214,21 +231,21 @@ function revealItemInFolder(event: Event) {
             </h1>
             <article class="prose prose-lg max-w-none">
               <p>
-                Thank you for participating in the {{ studyInfo.studyName }}-study! So far, all data
+                Thank you for participating in the {{ studyConfig.name }}-study! So far, all data
                 that has been collected and stored
                 <b class="dark:text-white">only locally on your machine</b>. In this step, the
                 researchers would like to ask you to share this data for analysis and publication in
                 scientific journals.
               </p>
               <p>
-                Please click "Next" once you are ready to
-                <b class="dark:text-white">first review, and later share your data</b>.
+                Please click <b class="dark:text-white">"Next"</b> once you are ready to
+                <b class="dark:text-white">first review and later share your data</b>.
                 <span v-if="studyConfig.dataExportEncrypted">
                   The export that will be created with your permission in the next step will be
                   encrypted and password-protected. </span
                 >
               </p>
-              <p>
+              <p class="mb-4">
                 Below, you find additional information on the study and how the researchers ensure
                 your data privacy and security.
               </p>
@@ -236,7 +253,7 @@ function revealItemInFolder(event: Event) {
                 <tbody>
                   <tr>
                     <td>Contact:</td>
-                    <td>{{ studyInfo.contactName }} ({{ studyInfo.contactEmail }})</td>
+                    <td>{{ studyInfo.contactName }} (<a :href="'mailto:' + studyInfo.contactEmail" target="_blank">{{ studyInfo.contactEmail }}</a>)</td>
                   </tr>
                   <tr>
                     <td>Study Website:</td>
@@ -255,14 +272,15 @@ function revealItemInFolder(event: Event) {
                   <tr>
                     <td class="w-40 align-top">Study Description:</td>
                     <td>
-                      <div class="collapse bg-base-200">
+                      <!-- <div class="collapse bg-base-200">
                         <input v-model="studyDescriptionExpanded" type="checkbox" />
                         <div class="collapse-title text-sm">
                           Click to {{ studyDescriptionExpanded ? 'collapse' : 'expand' }} Study
                           Description
                         </div>
                         <div class="collapse-content" v-html="studyInfo.shortDescription" />
-                      </div>
+                      </div> -->
+                      <div v-html="studyInfo.shortDescription"></div>
                     </td>
                   </tr>
                 </tbody>
@@ -295,7 +313,7 @@ function revealItemInFolder(event: Event) {
                   >).
                 </li>
                 <li>
-                  <a :href="studyConfig.uploadUrl" target="_blank">Click here</a> to open the upload
+                  <a href="#" @click="openUploadUrl">Click here</a> to open the upload
                   page.
                 </li>
                 <li>
@@ -314,6 +332,19 @@ function revealItemInFolder(event: Event) {
                 opening the exported file is:
                 <span class="password-badge">PersonalAnalytics_{{ studyInfo.subjectId }}</span
                 >.
+              </p>
+            </article>
+          </div>
+          <div v-if="currentNamedStep === 'upload-to-ddl'" key="3" class="flex w-full flex-col">
+            <h1 class="mb-8 text-4xl font-medium text-neutral-800 dark:text-neutral-300">
+              Thank you for your data donation
+            </h1>
+            <article class="prose prose-lg max-w-none">
+              <p>Thank you for donating your data to {{ studyConfig.name }}.</p>
+              <p>You can close this window now.</p>
+              <p>
+                Please contact {{ studyConfig.contactName }} ({{ studyConfig.contactEmail }}) in
+                case you have any questions. Thank you!
               </p>
             </article>
           </div>
@@ -366,7 +397,8 @@ function revealItemInFolder(event: Event) {
           @click="handleNextStep"
         >
           <template v-if="currentStep === maxSteps - 1">Close </template>
-          <template v-else> Next </template>
+          <template v-else-if="studyConfig.dataExportFormat === 'ExportToDDL' && currentNamedStep === 'export-2'">Donate Data Export to Researchers</template>
+          <template v-else>Next</template>
         </button>
       </div>
     </div>

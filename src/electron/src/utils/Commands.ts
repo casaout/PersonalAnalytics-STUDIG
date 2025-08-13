@@ -1,8 +1,11 @@
 import StudyInfoDto from '../../shared/dto/StudyInfoDto';
 import { DataExportType } from '../../shared/DataExportType.enum';
+import { DataExportFormat } from '../../shared/DataExportFormat.enum';
 import UserInputDto from '../../shared/dto/UserInputDto';
 import WindowActivityDto from '../../shared/dto/WindowActivityDto';
 import ExperienceSamplingDto from '../../shared/dto/ExperienceSamplingDto';
+import { WorkHoursDto } from '../../shared/dto/WorkHoursDto'
+import { Settings } from 'electron/main'
 
 type Commands = {
   createExperienceSample: (
@@ -17,6 +20,13 @@ type Commands = {
   closeOnboardingWindow: () => void;
   closeDataExportWindow: () => void;
   getStudyInfo: () => Promise<StudyInfoDto>;
+  getWorkHours: () => Promise<WorkHoursDto>;
+  setWorkHours: (schedule: WorkHoursDto) => Promise<void>;
+  setSettingsProp: (prop: string, value: any) => Promise<void>;
+  getSettings: () => Promise<Settings>;
+  getWorkHoursEnabled: () => Promise<boolean>;
+  openLogs: () => void;
+  openCollectedData: () => void;
   getMostRecentExperienceSamplingDtos(itemCount: number): Promise<ExperienceSamplingDto[]>;
   getMostRecentUserInputDtos(itemCount: number): Promise<UserInputDto[]>;
   getMostRecentWindowActivityDtos(itemCount: number): Promise<WindowActivityDto[]>;
@@ -25,9 +35,12 @@ type Commands = {
     windowActivityExportType: DataExportType,
     userInputExportType: DataExportType,
     obfuscationTerms: string[],
-    encryptData: boolean
-  ) => Promise<string>;
+    encryptData: boolean,
+    exportFormat: DataExportFormat,
+  ) => Promise<{ fullPath: string; fileName: string }>;
   revealItemInFolder: (path: string) => Promise<void>;
+  openUploadUrl: () => void;
+  showDataExportError: () => void;
   startAllTrackers: () => void;
   triggerPermissionCheckAccessibility: (prompt: boolean) => boolean;
   triggerPermissionCheckScreenRecording: () => boolean;

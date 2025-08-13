@@ -1,17 +1,18 @@
 import { ExperienceSamplingService } from '../main/services/ExperienceSamplingService';
-import { app, ipcMain, IpcMainInvokeEvent, shell, systemPreferences } from 'electron';
+import { app, dialog, ipcMain, IpcMainInvokeEvent, shell, systemPreferences } from 'electron';
 import { WindowService } from '../main/services/WindowService';
 import { getMainLogger } from '../config/Logger';
 import { TypedIpcMain } from '../../src/utils/TypedIpcMain';
 import Commands from '../../src/utils/Commands';
 import Events from '../../src/utils/Events';
+import { DataExportType } from '../../shared/DataExportType.enum';
+import { DataExportFormat } from '../../shared/DataExportFormat.enum';
 import StudyInfoDto from '../../shared/dto/StudyInfoDto';
 import { Settings } from '../main/entities/Settings';
 import studyConfig from '../../shared/study.config';
 import { TrackerService } from '../main/services/trackers/TrackerService';
 import { WindowActivityTrackerService } from '../main/services/trackers/WindowActivityTrackerService';
 import { UserInputTrackerService } from '../main/services/trackers/UserInputTrackerService';
-import { DataExportType } from '../../shared/DataExportType.enum';
 import { DataExportService } from '../main/services/DataExportService';
 import UserInputDto from '../../shared/dto/UserInputDto';
 import WindowActivityDto from '../../shared/dto/WindowActivityDto';
@@ -19,11 +20,14 @@ import ExperienceSamplingDto from '../../shared/dto/ExperienceSamplingDto';
 import { is } from '../main/services/utils/helpers';
 import { JSDOM } from 'jsdom';
 import DOMPurify from 'dompurify';
+import { WorkScheduleService } from 'electron/main/services/WorkScheduleService'
+import { WorkHoursDto } from 'shared/dto/WorkHoursDto'
+import path from 'path';
 
 const LOG = getMainLogger('IpcHandler');
 
 export class IpcHandler {
-  private readonly actions: any;
+  private actions: any;
   private readonly windowService: WindowService;
   private readonly trackerService: TrackerService;
 
@@ -31,12 +35,14 @@ export class IpcHandler {
   private readonly windowActivityService: WindowActivityTrackerService;
   private readonly userInputService: UserInputTrackerService;
   private readonly dataExportService: DataExportService;
+  private readonly workScheduleService: WorkScheduleService;
   private typedIpcMain: TypedIpcMain<Events, Commands> = ipcMain as TypedIpcMain<Events, Commands>;
 
   constructor(
     windowService: WindowService,
     trackerService: TrackerService,
-    experienceSamplingService: ExperienceSamplingService
+    experienceSamplingService: ExperienceSamplingService,
+    workScheduleService: WorkScheduleService
   ) {
     this.windowService = windowService;
     this.trackerService = trackerService;
@@ -44,7 +50,17 @@ export class IpcHandler {
     this.windowActivityService = new WindowActivityTrackerService();
     this.userInputService = new UserInputTrackerService();
     this.dataExportService = new DataExportService();
+    this.workScheduleService = workScheduleService;
+  }
+
+  public async init(): Promise<void> {
     this.actions = {
+      openLogs: this.openLogs,
+      openCollectedData: this.openCollected,
+      getWorkHours: this.getWorkHours,
+      setWorkHours: this.setWorkHours,
+      setSettingsProp: this.setSettingsProp,
+      getSettings: this.getSettings,
       createExperienceSample: this.createExperienceSample,
       closeExperienceSamplingWindow: this.closeExperienceSamplingWindow,
       closeOnboardingWindow: this.closeOnboardingWindow,
@@ -56,14 +72,13 @@ export class IpcHandler {
       obfuscateWindowActivityDtosById: this.obfuscateWindowActivityDtosById,
       startDataExport: this.startDataExport,
       revealItemInFolder: this.revealItemInFolder,
+      openUploadUrl: this.openUploadUrl,
+      showDataExportError: this.showDataExportError,
       startAllTrackers: this.startAllTrackers,
       triggerPermissionCheckAccessibility: this.triggerPermissionCheckAccessibility,
       triggerPermissionCheckScreenRecording: this.triggerPermissionCheckScreenRecording
     };
-    LOG.debug('IpcHandler constructor called');
-  }
 
-  public init(): void {
     Object.keys(this.actions).forEach((action: string): void => {
       LOG.info(`ipcMain.handle setup: ${action}`);
       ipcMain.handle(action, async (_event: IpcMainInvokeEvent, ...args): Promise<any> => {
@@ -95,6 +110,16 @@ export class IpcHandler {
     );
   }
 
+  private openLogs() {
+    LOG.info(`Opening logs at ${app.getPath('logs')}`);
+    shell.openPath(`${app.getPath('logs')}`);
+  }
+
+  private openCollected() {
+    LOG.info(`Opening collected data at ${app.getPath('userData')}`);
+    shell.showItemInFolder(path.join(app.getPath('userData'), 'database.sqlite'));
+  }
+
   private closeExperienceSamplingWindow(skippedExperienceSampling: boolean): void {
     this.windowService.closeExperienceSamplingWindow(skippedExperienceSampling);
   }
@@ -105,6 +130,28 @@ export class IpcHandler {
 
   private closeDataExportWindow(): void {
     this.windowService.closeDataExportWindow();
+  }
+  
+  private async getWorkHours(): Promise<WorkHoursDto> {
+    return this.workScheduleService.getWorkSchedule();
+  }
+
+  private async setWorkHours(schedule: WorkHoursDto): Promise<void> {
+    await this.workScheduleService.setWorkSchedule(schedule);
+  }
+
+  private async setSettingsProp(prop: string, value: any): Promise<void> {
+    const settings: Settings = await Settings.findOne({ where: { onlyOneEntityShouldExist: 1 } });
+    settings[prop] = value;
+    await settings.save();
+  }
+
+  private async getSettings(): Promise<Settings> {
+    const settings: Settings = await Settings.findOne({ where: { onlyOneEntityShouldExist: 1 } });
+    if (!settings) {
+      throw new Error('Settings not found');
+    }
+    return settings;
   }
 
   private async getStudyInfo(): Promise<StudyInfoDto> {
@@ -153,18 +200,30 @@ export class IpcHandler {
     windowActivityExportType: DataExportType,
     userInputExportType: DataExportType,
     obfuscationTerms: string[],
-    encryptData: boolean
-  ): Promise<string> {
+    encryptData: boolean,
+    exportFormat: DataExportFormat,
+  ): Promise<{ fullPath: string; fileName: string }> {
     return this.dataExportService.startDataExport(
       windowActivityExportType,
       userInputExportType,
       obfuscationTerms,
-      encryptData
+      encryptData,
+      exportFormat
     );
   }
 
   private async revealItemInFolder(path: string): Promise<void> {
-    shell.showItemInFolder(path);
+    this.windowService.showItemInFolder(path);
+  }
+  
+  private async openUploadUrl(): Promise<void> {
+    this.windowService.openExternal();
+  }
+
+  private async showDataExportError(): Promise<void> {
+    dialog.showErrorBox(
+      'Study Data Export failed', 
+      `Please try again or contact the study team (${studyConfig.contactName}, ${studyConfig.contactEmail}) for help.`);
   }
 
   private triggerPermissionCheckAccessibility(prompt: boolean): boolean {

@@ -20,6 +20,8 @@ import { is } from './services/utils/helpers';
 import { Settings } from './entities/Settings';
 import { UsageDataService } from './services/UsageDataService';
 import { UsageDataEventType } from '../enums/UsageDataEventType.enum';
+import { WorkScheduleService } from './services/WorkScheduleService';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,11 +34,12 @@ process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
 
 const databaseService: DatabaseService = new DatabaseService();
 const settingsService: SettingsService = new SettingsService();
+const workScheduleService: WorkScheduleService = new WorkScheduleService();
 const appUpdaterService: AppUpdaterService = new AppUpdaterService();
 const windowService: WindowService = new WindowService(appUpdaterService);
 const experienceSamplingService: ExperienceSamplingService = new ExperienceSamplingService();
-const trackers: TrackerService = new TrackerService(studyConfig.trackers, windowService);
-const ipcHandler: IpcHandler = new IpcHandler(windowService, trackers, experienceSamplingService);
+const trackers: TrackerService = new TrackerService(studyConfig.trackers, windowService, workScheduleService);
+const ipcHandler: IpcHandler = new IpcHandler(windowService, trackers, experienceSamplingService, workScheduleService);
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) {
@@ -49,6 +52,7 @@ if (process.platform === 'win32') {
 }
 
 if (!app.requestSingleInstanceLock()) {
+  console.log('Another instance of the app is already running');
   app.quit();
   process.exit(0);
 }
@@ -60,6 +64,11 @@ if (is.macOS) {
 // Optional, initialize the logger for any renderer process
 log.initialize();
 const LOG = getMainLogger('Main');
+
+// Load environment variables from .env file
+dotenv.config();
+console.log('DDL_PROJECT_ID:', process.env.DDL_PROJECT_ID); // todo: temp: Confirm it's loaded
+
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('ch.ifi.hasel.personal-analytics');
@@ -75,9 +84,10 @@ app.whenReady().then(async () => {
 
   try {
     await databaseService.init();
+    await workScheduleService.init();
     await settingsService.init();
     await windowService.init();
-    ipcHandler.init();
+    await ipcHandler.init();
 
     const currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const currentLocale = app.getLocale();
@@ -116,8 +126,14 @@ app.whenReady().then(async () => {
       await trackers.registerTrackerCallback(TrackerType.ExperienceSamplingTracker);
     }
 
-    const settings: Settings = await Settings.findOneBy({ onlyOneEntityShouldExist: 1 });
+    if (studyConfig.displayDaysParticipated) {
+      await trackers.registerTrackerCallback(TrackerType.DaysParticipatedTracker);
+    }
 
+    const settings: Settings = await Settings.findOneBy({ onlyOneEntityShouldExist: 1 });
+    const isAutoLaunch = app.getLoginItemSettings().wasOpenedAtLogin || process.argv.includes('--hidden');
+
+    // show onboarding window (if never shown or macOS permissions are missing)
     if (
       settings.onboardingShown === false ||
       !macOSHasAccessibilityAndScreenRecordingPermission()
@@ -128,10 +144,13 @@ app.whenReady().then(async () => {
       await windowService.createOnboardingWindow();
       settings.onboardingShown = true;
       await settings.save();
+    
+    // show PA running page when it was not shown before (on macOS) OR if it was manually started
     } else if (
-      is.macOS &&
+      (is.macOS &&
       settings.onboardingShown === true &&
-      settings.studyAndTrackersStartedShown === false
+      settings.studyAndTrackersStartedShown === false) ||
+      (! isAutoLaunch)
     ) {
       await windowService.createOnboardingWindow('study-trackers-started');
       settings.studyAndTrackersStartedShown = true;
@@ -190,18 +209,6 @@ app.whenReady().then(async () => {
     app.exit();
   }
 
-  // show PA is running when it was manually started
-  const isAutoLaunch = app.getLoginItemSettings().wasOpenedAtLogin || process.argv.includes('--hidden');
-  if (!is.dev && !isAutoLaunch) {
-    LOG.info(`Manually opened app, showing onboarding window...`);
-    const shouldShowStudyTrackersStarted = !!(await Settings.findOneBy({
-      studyAndTrackersStartedShown: false,
-      onboardingShown: true
-    }));
-    await windowService.createOnboardingWindow(
-      shouldShowStudyTrackersStarted ? 'study-trackers-started' : undefined
-    );
-  }
 });
 
 let isAppQuitting = false;

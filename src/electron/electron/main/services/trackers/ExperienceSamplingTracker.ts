@@ -4,6 +4,8 @@ import { Tracker } from './Tracker';
 import getMainLogger from '../../../config/Logger';
 import { Settings } from '../../entities/Settings';
 import { powerMonitor } from 'electron';
+import { WorkScheduleService } from '../WorkScheduleService'
+import studyConfig from '../../../../shared/study.config'
 
 const LOG = getMainLogger('ExperienceSamplingTracker');
 
@@ -11,14 +13,16 @@ export class ExperienceSamplingTracker implements Tracker {
   private checkIfExperienceSamplingIsDueJob: schedule.Job;
   private forcedExperienceSamplingJob: schedule.Job;
   private readonly windowService: WindowService;
+  private readonly workScheduleService: WorkScheduleService;
   private readonly intervalInMs: number;
   private readonly samplingRandomization: number;
 
   public readonly name: string = 'ExperienceSamplingTracker';
   public isRunning: boolean = false;
 
-  constructor(windowService: WindowService, intervalInMs: number, samplingRandomization: number) {
+  constructor(windowService: WindowService, workScheduleService: WorkScheduleService, intervalInMs: number, samplingRandomization: number) {
     this.windowService = windowService;
+    this.workScheduleService = workScheduleService;
     this.intervalInMs = intervalInMs;
     this.samplingRandomization = samplingRandomization;
   }
@@ -66,7 +70,19 @@ export class ExperienceSamplingTracker implements Tracker {
 
   private async handleExperienceSamplingJob(fireDate: Date): Promise<void> {
     LOG.info(`Experience Sampling Job was supposed to fire at ${fireDate}, fired at ${new Date()}`);
-    await this.windowService.createExperienceSamplingWindow();
+    // check if we can safely fire the experience sampling job
+    // or have to consider work hours based on user settings and time/weekday
+    const settings: Settings = await Settings.findOneBy({ onlyOneEntityShouldExist: 1 });  
+    const userConsiderWorkHours = settings.enabledWorkHours;
+    const inWorkHours = await this.workScheduleService.currentlyWithinWorkHours();
+    const considerWorkHours = studyConfig.trackers.experienceSamplingTracker.enabledWorkHours;
+    if (userConsiderWorkHours && considerWorkHours && !inWorkHours) {
+        LOG.info('Currently outside of work hours, abort firing');
+    } else {
+      // within work hours; start experience sampling
+      await this.windowService.createExperienceSamplingWindow();
+    }
+    // keep schedule for next experience sampling job no matter what..
     await this.scheduleNextJob();
   }
 

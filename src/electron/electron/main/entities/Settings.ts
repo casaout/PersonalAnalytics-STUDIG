@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'settings' })
-@Check('onlyOneEntityShouldExist = 1')
+// @Check('onlyOneEntityShouldExist = 1')
 export class Settings extends BaseEntity {
   // This is a hack to ensure that only one entity of this type exists
   // Trying to save a new entity will fail with a unique constraint violation
@@ -28,11 +28,17 @@ export class Settings extends BaseEntity {
   })
   subjectId: string;
 
+  @Column({ type: 'boolean', nullable: false, default: true })
+  enabledWorkHours: boolean;
+
   @Column({ type: 'boolean', nullable: false, default: false })
   onboardingShown: boolean;
 
   @Column({ type: 'boolean', nullable: false, default: false })
   studyAndTrackersStartedShown: boolean;
+
+  @Column({ type: 'int', nullable: false, default: 0 })
+  daysParticipated: number;
 
   @Column('datetime', { nullable: true })
   nextExperienceSamplingInvocation: Date;

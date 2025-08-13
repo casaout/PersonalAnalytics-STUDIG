@@ -6,7 +6,11 @@ module.exports = {
   directories: {
     output: 'release/${version}'
   },
-  files: ['dist', 'dist-electron'],
+  files: [
+    'dist',
+    'dist-electron',
+    '!node_modules/uiohook-napi/build/**'
+  ],
   publish: {
     provider: 'github',
     owner: 'casaout',
@@ -14,10 +18,6 @@ module.exports = {
   },
   afterSign: "scripts/notarize.cjs",
   mac: {
-    target: {
-      target: "default",
-      arch: ["x64", "arm64"],
-    },
     artifactName: '${productName}-${version}-${arch}.${ext}',
     asarUnpack: ['node_modules/**/*.node'],
     entitlements: 'build/entitlements.mac.plist',
